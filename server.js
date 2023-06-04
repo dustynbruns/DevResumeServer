@@ -1,7 +1,12 @@
 require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
+const axios = require('axios');
 const AWS = require('aws-sdk');
+
+const githubToken = process.env.GITHUB_TOKEN;
+
+axios.defaults.headers.common = { Authorization: `Bearer ${githubToken}` };
 
 AWS.config.update({
    accessKeyId: process.env.AWS_ACCESS_KEY_ID,
@@ -38,6 +43,29 @@ app.post('/contact', async (req, res) => {
   } catch (error) {
     console.error(error);
     res.status(500).send('Error in sending email');
+  }
+});
+
+app.get('/projects', async (req, res) => {
+  try {
+    const { data: repos } = await axios.get('https://api.github.com/users/dustynbruns/repos');
+
+    const projects = await Promise.all(repos.map(async (repo) => {
+      try {
+        const { data: readme } = await axios.get(`https://api.github.com/repos/${repo.owner.login}/${repo.name}/readme`);
+
+        const readmeContent = Buffer.from(readme.content, 'base64').toString();
+
+        return { ...repo, readme: readmeContent };
+      } catch (error) {
+        return repo;
+      }
+    }));
+
+    res.json(projects);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: 'An error occurred while fetching projects.' });
   }
 });
 

@@ -1,0 +1,1 @@
+This is the server for my resume site. This server was built using node.js and handles GitHub repositories and Contact requests.

@@ -15,10 +15,14 @@ AWS.config.update({
 });
 
 const app = express();
-app.use(cors());
+app.use(cors({
+  origin: 'https://main.d23gwpo5jm9qq9.amplifyapp.com',
+  allowedHeaders: ['Content-Type']
+}));
 app.use(express.json());
 
-app.post('/contact', async (req, res) => {
+app.options('/contact', cors());
+app.post('/contact', cors(), async (req, res) => {
   // access form data from req.body
   const { name, email, message } = req.body;
 

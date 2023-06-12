@@ -1,3 +1,4 @@
 /node_modules
+/version.update
 .DS_Store
 .env
